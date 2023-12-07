@@ -1,0 +1,26 @@
+# vim: syntax=yaml
+---
+Resources:
+  ApiGateway:
+    Type: AWS::ApiGatewayV2::Api
+    Properties:
+      Name: TSM
+
+  ApiGatewayIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId:
+        Ref: ApiGateway
+      IntegrationType: AWS_PROXY
+      IntegrationUri:
+        Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/getQuotes/invocations
+
+  ApiGatewayRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId:
+        Ref: ApiGateway
+      RouteKey: "GET /"
+      AuthorizationType: NONE
+      Target:
+        Fn::Sub: integrations/${ApiGatewayIntegration}

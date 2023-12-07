@@ -1,0 +1,71 @@
+service: sls-aws-spring-cloud-function
+frameworkVersion: "3"
+custom:
+  conf:
+    namePrefix: "az-eu-west-1-${env:AWS_ACCESS_KEY_ID}-${self:provider.tags.Organization}-${sls:stage}-${self:service}"
+  stages:
+    deve: # azecsapps-deve
+      envName: "Development"
+    prod: # azecsapps-prod
+      envName: "Production"
+provider:
+  iam:
+    role: { Fn:GetAtt: [LambdaIamRole, Arn]}
+  deploymentBucket:
+    name: "${env:SLS_DEPLOYMENT_BUCKET_NAME}"
+    sseKMSKeyId: "${env:SLS_SSE_KMS_KEY_ID}"
+    serverSideEncryption: "aws:kms"
+
+  name: "aws"
+  tags:
+    Name: "${self:custom.conf.namePrefix}-${self:service}"
+    Owner: "ksmk712" # Paul, Ordman
+    Region: "${aws:region}"
+    AccountId: "${env:AWS_ACCESS_KEY_ID}"
+    CostCenter: "8300903"
+    Environment: "Development"
+    Description: "AWS Resources for ${self:service}"
+    Organization: "ECS"
+    LastUpdatedBy: "${env:USER}"
+    SourceRepository: "https://github.com/az-soft-eng/sls-basic"
+  stage: "${opt:stage, 'deve'}"
+  region: "eu-west-1"
+  deploymentMethod: "direct"
+  runtime: "java17"
+  timeout: 10
+package:
+  artifact: target/aws-java-spring-cloud-function-demo-0.0.1-SNAPSHOT-aws.jar
+resources:
+  - "${file(src/conf/cf/LambdaIamRole.yml)}"
+  - "${file(src/conf/cf/LambdaDynamoDbTable.yml)}"
+functions:
+  getData:
+    handler: com.healthfirst.memberfunction.MemberFunctionApplication::getMoreData
+    events:
+      - httpApi:
+          path: /getData
+          method: get
+  fetchData:
+    handler: com.healthfirst.memberfunction.MemberFunctionApplication::fetchData
+    events:
+      - httpApi:
+          path: /fetchData
+          method: get
+  fetchRepos:
+    handler: com.healthfirst.memberfunction.MemberFunctionApplication::fetchRepos
+    events:
+      - httpApi:
+          path: /fetchRepos
+          method: get
+  getQuotes:
+    handler: az.api.service.GetData::getAllData
+    events:
+      - httpApi:
+          path: /getQuotes
+          method: get
+  members:
+    handler: com.healthfirst.memberfunction.AwsLambdaHandler
+    events:
+      - httpApi:
+          path: /members
+          method: "*"

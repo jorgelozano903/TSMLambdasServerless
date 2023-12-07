@@ -1,0 +1,45 @@
+# vim: syntax=yaml
+---
+Resources:
+  LambdaIamRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      Path: "/sls/"
+
+      Policies:
+        - PolicyName: "${self:custom.conf.namePrefix}-access-role"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: "Allow"
+                Action:
+                  - "logs:PutLogEvents"
+                Resource: "arn:aws:logs:${aws:region}:${aws:accountId}:log-group:/aws/lambda/*:*:*"
+              - Effect: "Allow"
+                Action:
+                  - "logs:TagResource"
+                  - "logs:CreateLogGroup"
+                  - "logs:CreateLogStream"
+                Resource: "arn:aws:logs:${aws:region}:${aws:accountId}:log-group:/aws/lambda/*:*"
+
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              Service:
+                - "lambda.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
+
+      Tags:
+        - Key: "Name"
+          Value: "${self:custom.conf.namePrefix}"
+
+Outputs:
+  RoleName:
+    Value:
+      Ref: "LambdaIamRole"
+    Export:
+      Name: !Sub "${AWS::StackName}-LambdaIamRole"
+    Description: "The created iam role name for ${self:service}"

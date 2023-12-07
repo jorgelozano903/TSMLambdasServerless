@@ -1,0 +1,31 @@
+# vim: syntax=yaml
+---
+Resources:
+  LambdaDynamoDbTable:
+    Type: "AWS::DynamoDB::Table"
+    Properties:
+      TableName: "${self:custom.conf.namePrefix}"
+
+      KeySchema:
+        - KeyType: "HASH"
+          AttributeName: "key"
+
+      AttributeDefinitions:
+        - AttributeType: "S"
+          AttributeName: "key"
+
+      ProvisionedThroughput:
+        ReadCapacityUnits: 20
+        WriteCapacityUnits: 1
+
+      Tags:
+        - Key: "Name"
+          Value: "${self:custom.conf.namePrefix}"
+
+Outputs:
+  TableName:
+    Value:
+      Ref: "LambdaDynamoDbTable"
+    Export:
+      Name: !Sub "${AWS::StackName}-LambdaDynamoDbTable"
+    Description: "The created dynamodb table name for ${self:service}"
