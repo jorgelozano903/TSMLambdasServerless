@@ -1,13 +1,14 @@
 package com.healthfirst.memberfunction;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -36,42 +37,70 @@ public class MemberFunctionApplication {
 	}
 
 	@Bean
-	public List<String> fetchRepos() {
-		List<String> responses = new ArrayList<>();
+	public String fetchRepos() {
+		List<Object> responses = new ArrayList<>();
 
 		try {
 			for (int i = 1; i <= 4; i++) {
 				URL url = new URL("https://api.github.com/orgs/az-soft-eng/repos?per_page=100&page=" + i);
 				HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 				conn.setRequestMethod("GET");
-
-				String authorizationHeader = "Bearer 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";
-				String contentTypeHeader = "application/json";
-				List<String> headers = List.of("Authorization", authorizationHeader, "Content-Type", contentTypeHeader);
-
+				conn.setRequestProperty("Authorization","Bearer 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");
 				conn.connect();
-
 				int responseCode = conn.getResponseCode();
-
 				if (responseCode == HttpURLConnection.HTTP_OK) {
 					BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
 					String inputLine;
+					//List<Object> response = new ArrayList<>();
 					StringBuilder response = new StringBuilder();
 
 					while ((inputLine = in.readLine()) != null) {
 						response.append(inputLine);
+						//response.add(inputLine);
 					}
 
 					in.close();
-					responses.add(response.toString());
+					//responses.add(response.toString());
+					responses.add(response);
 				} else {
 					System.out.println("GET request failed. Response Code: " + responseCode);
 					responses.add(null);
 				}
 			}
 
-			return responses;
+			return responses.toString();
 		} catch (Exception exception) {
+			exception.printStackTrace();
+			throw new RuntimeException(exception);
+		}
+	}
+
+	@Bean
+	public String getEndOfLife(){
+		try{
+			URL url = new URL("https://endoflife.date/api/ubuntu.json");
+			HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+			conn.setRequestMethod("GET");
+			conn.connect();
+			int responseCode = conn.getResponseCode();
+			if (responseCode == HttpURLConnection.HTTP_OK) {
+				BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+				String inputLine;
+				StringBuilder response = new StringBuilder();
+
+				while ((inputLine = in.readLine()) != null) {
+					response.append(inputLine);
+				}
+
+				in.close();
+				return response.toString();
+			}
+
+			else {
+				System.out.println("GET request failed. Response Code: " + responseCode);
+				return null;
+			}
+		}catch (Exception exception) {
 			exception.printStackTrace();
 			throw new RuntimeException(exception);
 		}
@@ -95,8 +124,9 @@ public class MemberFunctionApplication {
 			conn2.setRequestMethod("GET");
 			conn3.setRequestMethod("GET");
 			conn4.setRequestMethod("GET");
+			conn.setRequestProperty("Authorization","Bearer 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");
 
-			String authorizationHeader = "Bearer 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";
+			String authorizationHeader = "Bearer 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";
 			String contentTypeHeader = "application/json";
 			List<String> headers = List.of("Authorization", authorizationHeader, "Content-Type", contentTypeHeader);
 
@@ -115,9 +145,7 @@ public class MemberFunctionApplication {
 			int responseCode3 = conn3.getResponseCode();
 			int responseCode4 = conn4.getResponseCode();
 
-			String fullResponse = "";
-
-			if (responseCode == HttpURLConnection.HTTP_OK && responseCode2 == HttpURLConnection.HTTP_OK && responseCode3 == HttpURLConnection.HTTP_OK && responseCode4 == HttpURLConnection.HTTP_OK) {
+			if (responseCode == HttpURLConnection.HTTP_OK) {
 				BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
 				String inputLine;
 				StringBuilder response = new StringBuilder();

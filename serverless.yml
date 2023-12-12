@@ -57,6 +57,12 @@ functions:
       - httpApi:
           path: /fetchRepos
           method: get
+  getEndOfLife:
+    handler: com.healthfirst.memberfunction.MemberFunctionApplication::getEndOfLife
+    events:
+      - httpApi:
+          path: /getEndOfLife
+          method: get
   getQuotes:
     handler: az.api.service.GetData::getAllData
     events:
