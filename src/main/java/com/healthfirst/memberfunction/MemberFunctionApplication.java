@@ -4,7 +4,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
-import org.springframework.web.bind.annotation.RequestParam;
+import com.amazonaws.services.lambda.runtime.Context;
+import com.amazonaws.services.lambda.runtime.RequestHandler;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -15,10 +18,26 @@ import java.util.List;
 import java.util.function.Function;
 
 @SpringBootApplication
-public class MemberFunctionApplication {
+public class MemberFunctionApplication implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent>{
+
+	private APIGatewayProxyRequestEvent input;
+	private Context context;
 
 	public static void main(String[] args) {
 		SpringApplication.run(MemberFunctionApplication.class, args);
+	}
+
+	@Override
+	public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent input, Context context) {
+		// Retrieve path parameters
+		String product = input.getPathParameters().get("product");
+		String cycle = input.getPathParameters().get("cycle");
+
+		// Your logic using product and cycle parameters
+
+		APIGatewayProxyResponseEvent response = new APIGatewayProxyResponseEvent();
+		// Set response properties, e.g., response.setBody("...");
+		return response;
 	}
 
 	@Bean
@@ -76,9 +95,11 @@ public class MemberFunctionApplication {
 	}
 
 	@Bean
-	public String getEndOfLife(){
+	public String getEndOfLife(APIGatewayProxyRequestEvent input){
 		try{
-			URL url = new URL("https://endoflife.date/api/ubuntu.json");
+			String product = input.getPathParameters().get("product");
+			String cycle = input.getPathParameters().get("cycle");
+			URL url = new URL("https://endoflife.date/api/" + product + ".json");
 			HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 			conn.setRequestMethod("GET");
 			conn.connect();

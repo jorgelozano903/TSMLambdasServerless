@@ -61,8 +61,13 @@ functions:
     handler: com.healthfirst.memberfunction.MemberFunctionApplication::getEndOfLife
     events:
       - httpApi:
-          path: /getEndOfLife
+          path: /getEndOfLife/{product}/{cycle}
           method: get
+          request:
+            parameters:
+              paths:
+                product: true
+                cycle: true
   getQuotes:
     handler: az.api.service.GetData::getAllData
     events:
