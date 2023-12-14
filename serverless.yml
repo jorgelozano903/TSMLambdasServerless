@@ -9,6 +9,8 @@ custom:
     prod: # azecsapps-prod
       envName: "Production"
 provider:
+  httpApi:
+    cors: true
   iam:
     role: { Fn:GetAtt: [LambdaIamRole, Arn]}
   deploymentBucket:
@@ -39,44 +41,61 @@ resources:
   - "${file(src/conf/cf/LambdaIamRole.yml)}"
   - "${file(src/conf/cf/LambdaDynamoDbTable.yml)}"
 functions:
-  getData:
-    handler: com.healthfirst.memberfunction.MemberFunctionApplication::getMoreData
-    events:
-      - httpApi:
-          path: /getData
-          method: get
-  fetchData:
-    handler: com.healthfirst.memberfunction.MemberFunctionApplication::fetchData
-    events:
-      - httpApi:
-          path: /fetchData
-          method: get
   fetchRepos:
     handler: com.healthfirst.memberfunction.MemberFunctionApplication::fetchRepos
     events:
       - httpApi:
           path: /fetchRepos
           method: get
+          cors:
+            origin: '*' # <-- Specify allowed origin
+            headers: # <-- Specify allowed headers
+              - Content-Type
+              - X-Amz-Date
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Amz-User-Agent
+            allowCredentials: false
   getEndOfLife:
     handler: com.healthfirst.memberfunction.MemberFunctionApplication::getEndOfLife
     events:
       - httpApi:
           path: /getEndOfLife/{product}/{cycle}
           method: get
+          cors:
+            origin: '*' # <-- Specify allowed origin
+            headers: # <-- Specify allowed headers
+              - Content-Type
+              - X-Amz-Date
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Amz-User-Agent
+            allowCredentials: false
           request:
             parameters:
               paths:
                 product: true
                 cycle: true
-  getQuotes:
-    handler: az.api.service.GetData::getAllData
+  getRepoData:
+    handler: com.healthfirst.memberfunction.MemberFunctionApplication::getRepoData
     events:
       - httpApi:
-          path: /getQuotes
+          path: /getRepoData/{repo}/{path}
           method: get
-  members:
-    handler: com.healthfirst.memberfunction.AwsLambdaHandler
-    events:
-      - httpApi:
-          path: /members
-          method: "*"
+          cors:
+            origin: '*' # <-- Specify allowed origin
+            headers: # <-- Specify allowed headers
+              - Content-Type
+              - X-Amz-Date
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Amz-User-Agent
+            allowCredentials: false
+          request:
+            parameters:
+              paths:
+                repo: true
+                path: true
